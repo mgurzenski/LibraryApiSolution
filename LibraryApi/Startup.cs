@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using LibraryApi.Domain;
+using LibraryApi.Profiles;
 using LibraryApi.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -36,6 +38,16 @@ namespace LibraryApi
             {
                 options.UseSqlServer(Configuration.GetConnectionString("library"));
             });
+
+            var mapperConfig = new MapperConfiguration(opt =>
+            {
+                opt.AddProfile<BooksProfile>();
+            });
+
+            IMapper mapper = mapperConfig.CreateMapper();
+
+            services.AddSingleton<IMapper>(mapper);
+            services.AddSingleton<MapperConfiguration>(mapperConfig);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

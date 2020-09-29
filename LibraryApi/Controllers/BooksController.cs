@@ -1,4 +1,6 @@
 ﻿
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using LibraryApi.Domain;
 using LibraryApi.Models.Books;
 using Microsoft.AspNetCore.Mvc;
@@ -13,10 +15,14 @@ namespace LibraryApi.Controllers
     public class BooksController : ControllerBase
     {
         private LibraryDataContext _context;
+        private IMapper _mapper;
+        private MapperConfiguration _mapperConfig;
 
-        public BooksController(LibraryDataContext context)
+        public BooksController(LibraryDataContext context, IMapper mapper, MapperConfiguration mapperConfig)
         {
             _context = context;
+            _mapper = mapper;
+            _mapperConfig = mapperConfig;
         }
 
         [HttpGet("/books")]
@@ -24,19 +30,35 @@ namespace LibraryApi.Controllers
         {
             var response = new GetBooksResponse();
 
-            var books = await _context.Books
-                .Where(b => b.IsInInventory == true)
-                .Select(b => new GetBooksResponseItem
-                {
-                    Id = b.Id,
-                    Title = b.Title,
-                    Author = b.Author
-                })
+            var books = await BooksInInventory()
+                .ProjectTo<GetBooksResponseItem>(_mapperConfig)
                 .ToListAsync();
 
             response.Data = books;
 
             return Ok(response);
+        }
+
+        [HttpGet("/books/{bookId:int}")]
+        public async Task<ActionResult> GetBookById([FromRoute] int bookId)
+        {
+            var book = await BooksInInventory()
+                .Where(b => b.Id == bookId)
+                .ProjectTo<GetBookDetailsResponse>(_mapperConfig)
+                .SingleOrDefaultAsync();
+
+            if(book == null)
+            {
+                return NotFound();
+            } else
+            {
+                return Ok(book);
+            }
+        }
+
+        private IQueryable<Book> BooksInInventory()
+        {
+            return _context.Books.Where(b => b.IsInInventory == true);
         }
     }
 }
