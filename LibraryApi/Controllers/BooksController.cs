@@ -1,5 +1,6 @@
 ﻿
 using LibraryApi.Domain;
+using LibraryApi.Models.Books;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -21,7 +22,20 @@ namespace LibraryApi.Controllers
         [HttpGet("/books")]
         public async Task<ActionResult> GetAllBooks()
         {
-            var response = await _context.Books.ToListAsync();
+            var response = new GetBooksResponse();
+
+            var books = await _context.Books
+                .Where(b => b.IsInInventory == true)
+                .Select(b => new GetBooksResponseItem
+                {
+                    Id = b.Id,
+                    Title = b.Title,
+                    Author = b.Author
+                })
+                .ToListAsync();
+
+            response.Data = books;
+
             return Ok(response);
         }
     }
