@@ -3,6 +3,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using LibraryApi.Domain;
 using LibraryApi.Models.Books;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -26,7 +27,8 @@ namespace LibraryApi.Controllers
         }
 
         [HttpGet("/books")]
-        public async Task<ActionResult> GetAllBooks()
+        [Produces("application/json")]
+        public async Task<ActionResult<GetBooksResponse>> GetAllBooks()
         {
             var response = new GetBooksResponse();
 
@@ -40,7 +42,10 @@ namespace LibraryApi.Controllers
         }
 
         [HttpGet("/books/{bookId:int}")]
-        public async Task<ActionResult> GetBookById([FromRoute] int bookId)
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<GetBookDetailsResponse>> GetBookById([FromRoute] int bookId)
         {
             var book = await BooksInInventory()
                 .Where(b => b.Id == bookId)
