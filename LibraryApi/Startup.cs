@@ -34,7 +34,7 @@ namespace LibraryApi
 
             services.AddDbContext<LibraryDataContext>(options =>
             {
-                options.UseSqlServer(/*TODO BAD*/ @"server=.\sqlexpress;database=books_dev;integrated security=true");
+                options.UseSqlServer(Configuration.GetConnectionString("library"));
             });
         }
 
