@@ -24,9 +24,38 @@ namespace LibraryApi.Controllers
             return Ok($"Getting blogs for {year}/{month}/{day}");
         }
         // Query Strings
+        // GET /employees?dept=DEV
+        [HttpGet("/employees")]
+        public ActionResult GetEmployees([FromQuery] string department = "All", [FromQuery] decimal minSalary = 0)
+        {
+            return Ok($"Returning all employees from {department} with a minumum salary of {minSalary:c}");
+        }
 
         // Headers
+        [HttpGet("/whoami")]
+        public ActionResult ShowUserAgent([FromHeader(Name ="User-Agent")] string userAgent)
+        {
+            return Ok($"I see you are running {userAgent}");
+        }
 
         // Entities
+
+        [HttpPost("/employees")]
+        public ActionResult Hire([FromBody] PostEmployeeCreate employeeToHire)
+        {
+            // Your template for doing a post to a collection.
+            // Validate the data. If it is bad, send a 400 with or without details.
+            return Ok($"You want to hire {employeeToHire.Name} in {employeeToHire.Department} at {employeeToHire.StartingSalary:c}");
+
+        }
+
+        
+    }
+
+    public class PostEmployeeCreate
+    {
+        public string Name { get; set; }
+        public string Department { get; set; }
+        public decimal StartingSalary { get; set; }
     }
 }
