@@ -39,8 +39,14 @@ namespace LibraryApi.Controllers
             response.Data = books;
 
             return Ok(response);
+           
         }
 
+        /// <summary>
+        /// Gives you a book for a specific id.
+        /// </summary>
+        /// <param name="bookId">The id of the book</param>
+        /// <returns>Either details about the book or a 404</returns>
         [HttpGet("/books/{bookId:int}")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
