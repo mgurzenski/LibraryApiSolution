@@ -26,6 +26,35 @@ namespace LibraryApi.Controllers
             _mapperConfig = mapperConfig;
         }
 
+
+        [HttpPost("books")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<ActionResult<GetBookDetailsResponse>> AddABook([FromBody] PostBookCreate bookToAdd)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            else
+            {
+                // add it to the db context. (we need to make it a book)
+                var book = _mapper.Map<Book>(bookToAdd); // PostBookCreate -> Book
+
+                _context.Books.Add(book); // book.Id = 0;
+                // save the changes to the database.
+                await _context.SaveChangesAsync();
+                // book.Id = 8;
+                var response = _mapper.Map<GetBookDetailsResponse>(book); // Book -> GetBookDetailsResponse
+                
+                // return a 201, with location header, with a copy of what they'd get from that location
+
+                return CreatedAtRoute("books#getbyid", new { bookId = response.Id }, response);
+            }
+        }
+
+
+
         /// <summary>
         /// Allows you to get a list of our vast inventory of fine books    
         /// </summary>
@@ -43,7 +72,7 @@ namespace LibraryApi.Controllers
             response.Data = books;
 
             return Ok(response);
-           
+
         }
 
         /// <summary>
@@ -51,7 +80,7 @@ namespace LibraryApi.Controllers
         /// </summary>
         /// <param name="bookId">The id of the book</param>
         /// <returns>Either details about the book or a 404</returns>
-        [HttpGet("/books/{bookId:int}")]
+        [HttpGet("/books/{bookId:int}", Name = "books#getbyid")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -62,15 +91,16 @@ namespace LibraryApi.Controllers
                 .ProjectTo<GetBookDetailsResponse>(_mapperConfig)
                 .SingleOrDefaultAsync();
 
-            if(book == null)
+            if (book == null)
             {
                 return NotFound();
-            } else
+            }
+            else
             {
                 return Ok(book);
             }
         }
 
-       
+
     }
 }
