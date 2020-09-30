@@ -26,13 +26,17 @@ namespace LibraryApi.Controllers
             _mapperConfig = mapperConfig;
         }
 
+        /// <summary>
+        /// Allows you to get a list of our vast inventory of fine books    
+        /// </summary>
+        /// <returns>A list of books for you to peruse.</returns>
         [HttpGet("/books")]
         [Produces("application/json")]
         public async Task<ActionResult<GetBooksResponse>> GetAllBooks()
         {
             var response = new GetBooksResponse();
 
-            var books = await BooksInInventory()
+            var books = await _context.BooksInInventory()
                 .ProjectTo<GetBooksResponseItem>(_mapperConfig)
                 .ToListAsync();
 
@@ -53,7 +57,7 @@ namespace LibraryApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<GetBookDetailsResponse>> GetBookById([FromRoute] int bookId)
         {
-            var book = await BooksInInventory()
+            var book = await _context.BooksInInventory()
                 .Where(b => b.Id == bookId)
                 .ProjectTo<GetBookDetailsResponse>(_mapperConfig)
                 .SingleOrDefaultAsync();
@@ -67,9 +71,6 @@ namespace LibraryApi.Controllers
             }
         }
 
-        private IQueryable<Book> BooksInInventory()
-        {
-            return _context.Books.Where(b => b.IsInInventory == true);
-        }
+       
     }
 }
